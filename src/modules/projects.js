@@ -84,9 +84,12 @@ function updateNewTodo({title, dueDate, priority}) {
     });
 }
 
-function deleteTodo({todo, project}) {
-    projects[project].todos.splice(todo, 1);
-    pubsub.emmit("projectsUpdated", projects);
+function deleteTodo({todoIndex, projectIndex}) {
+    projects[projectIndex].todos.splice(todoIndex, 1);
+    pubsub.emmit("showProject", {
+        project: projects[projectIndex],
+        projectIndex
+    });
 }
 
 export { projects };

@@ -172,7 +172,7 @@ function createTodoElement(todo, index) {
 
     const deleteButton = createElement("button", "delete-todo-button");
     deleteButton.innerHTML = trashIcon;
-    deleteButton.dataset.id = "delete-todo-button";
+    deleteButton.setAttribute("data-delete-todo", "");
 
     const editButton = createElement("button", "edit-todo-button");
     editButton.innerHTML = pencilIcon;

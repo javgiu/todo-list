@@ -24,6 +24,17 @@ addGlobalEvent(
     }
 );
 
+addGlobalEvent(
+    "click",
+    "[data-delete-todo]",
+    (e) => {
+        pubsub.emmit("deleteTodo", {
+            todoIndex: e.target.closest(".todo").dataset.id, 
+            projectIndex: e.target.closest(".expanded-project").dataset.id 
+        })
+    }
+)
+
 pubsub.on("projectsDisplayed", addProjectEvents);
 pubsub.on("todoDialogCreated", ({
     button, 
@@ -68,7 +79,6 @@ function addProjectEvents(projects) {
             case "expand-todo-button": 
                 break; 
             default:
-                console.dir("button.dataset.id");
                 break;
             }
         } else if(e.target.nodeName == "INPUT") {
