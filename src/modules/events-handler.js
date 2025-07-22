@@ -1,7 +1,28 @@
 import pubsub from "./PubSub";
 
-const navMenu = document.querySelector("nav");
-const addProjectButton = navMenu.lastElementChild;
+function addGlobalEvent(eventName, elementSelector, callback, parent = document) {
+    parent.addEventListener(eventName, (e) => {
+        if(e.target.matches(elementSelector)) {
+            callback(e);
+        }
+    })
+}
+
+addGlobalEvent(
+    "click",
+    "[data-add-project]",
+    (e) => {
+        pubsub.emmit("showNewProjectDialog");
+    }
+);
+
+addGlobalEvent(
+    "click",
+    "[data-return]",
+    (e) => {
+        pubsub.emmit("backToProjects");
+    }
+);
 
 pubsub.on("projectsDisplayed", addProjectEvents);
 pubsub.on("todoDialogCreated", ({
@@ -24,10 +45,6 @@ pubsub.on("projectDialogCreated", ({ button, input }) => {
     })
 })
 
-addProjectButton.addEventListener("click", () => {
-    pubsub.emmit("showNewProjectDialog")
-});
-
 function addProjectEvents(projects) {
     projects.forEach((project) => project.addEventListener("click", (e) => {
         if(e.target.closest("button")) {
@@ -40,10 +57,24 @@ function addProjectEvents(projects) {
                 pubsub.emmit("showNewTodoDialog");
                 pubsub.emmit("createNewTodo", button.parentElement.dataset.id);
                 break;
+            case "delete-todo-button":
+                pubsub.emmit("deleteTodo", {
+                    todo: button.closest(".todo").dataset.id, 
+                    project: button.closest(".project").dataset.id 
+                });
+                break; 
+            case "edit-todo-button": 
+                break; 
+            case "expand-todo-button": 
+                break; 
             default:
-                console.dir(button.dataset.id);
+                console.dir("button.dataset.id");
                 break;
             }
+        } else if(e.target.nodeName == "INPUT") {
+            return;
+        } else {
+            pubsub.emmit("requestProject", project.dataset.id);
         }
         
     }));    

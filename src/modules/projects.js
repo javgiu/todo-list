@@ -5,10 +5,18 @@ const projects = [];
 
 let onProject = 0;
 
+pubsub.on("backToProjects", () => {
+    pubsub.emmit("projectsUpdated", projects)
+})
 pubsub.on("createNewProjectRequested", createNewProject);
 pubsub.on("deleteProject", deleteProject);
 pubsub.on("createNewTodo", addNewTodo);
-pubsub.on("updateNewTodo", updateNewTodo)
+pubsub.on("updateNewTodo", updateNewTodo);
+pubsub.on("deleteTodo", deleteTodo);
+pubsub.on("requestProject", (projectIndex) => pubsub.emmit("showProject", {
+    project: projects[projectIndex],
+    projectIndex
+}));
 
 
 function fillProjects(...projectsArray) {
@@ -70,6 +78,14 @@ function updateNewTodo({title, dueDate, priority}) {
     projects.forEach(project => project.sortTodosByPriority());
     console.log(projects);
 
+    pubsub.emmit("showProject", {
+        project,
+        projectIndex: onProject
+    });
+}
+
+function deleteTodo({todo, project}) {
+    projects[project].todos.splice(todo, 1);
     pubsub.emmit("projectsUpdated", projects);
 }
 

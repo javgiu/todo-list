@@ -1,25 +1,44 @@
 import { appendTo, createElement, creator } from "../libraries/DOM";
 import plus from "../assets/icons/plus.svg"
 import deleteIcon from "../assets/icons/delete.svg";
+import pencil from "../assets/icons/pencil.svg";
+import trash from "../assets/icons/trash.svg";
+import menu from "../assets/icons/menu.svg";
+import back from "../assets/icons/arrow-left.svg"
 import pubsub from "./PubSub";
 
+const actionButton = document.querySelector(".action-button");
+const menuIcon = menu;
+const pencilIcon = pencil;
+const trashIcon = trash;
 const plusIcon = plus;
 const deleteSvg = deleteIcon;
+const backIcon = back;
 const contentDiv = document.querySelector("#content");
-const currentDisplayedProjects = [];
 
-pubsub.on("projectsUpdated", display);
+let currentDisplayedProjects = [];
+
+pubsub.on("projectsUpdated", projectsView);
 pubsub.on("showNewProjectDialog", showProjectDialog)
 pubsub.on("showNewTodoDialog", showTodoDialog);
+pubsub.on("showProject", singleProjectView);
 
-export default function display(projects) {
+export default function projectsView(projects = currentDisplayedProjects) {
     if(contentDiv.innerHTML !== "") {
         contentDiv.innerHTML = "";
     }
+
+    actionButton.innerHTML = plusIcon;
+    for (const attr of Array.from(actionButton.attributes)) {
+        if(attr.name.startsWith("data-")) {
+            actionButton.removeAttribute(attr.name);
+        }
+    }
+    actionButton.setAttribute("data-add-project", "");
+
     projects.forEach(project => {
 
         const projectElement = createElement("div","project");
-
         const header = createElement("div", "project-header");
         const title = createElement("h2", "project-title", project.title);
         const deleteProjectButton = createElement("button", "delete-project-button");
@@ -32,11 +51,10 @@ export default function display(projects) {
 
         projectElement.dataset.id = projects.indexOf(project);
 
-        const todoElements = project.todos.map(createTodoElement);
+        const todoElements = createTodosElement(project.todos);
 
-        todoElements.forEach(todoElement => appendTo(projectElement, todoElement));
+        appendTo(projectElement, todoElements);
 
-        addAddTodoButton(projectElement);
 
         appendTo(contentDiv, projectElement)
 
@@ -45,6 +63,87 @@ export default function display(projects) {
     });
 
     createProjectDialog();
+    pubsub.emmit("projectsDisplayed", currentDisplayedProjects);
+}
+
+function createTodosElement(todos) {
+    const todosElement = createElement("div", "todos");
+
+    todos.forEach((todo, index) => {
+        const todoElement = createElement("div", "todo");
+
+        todoElement.dataset.id = index;
+        const todoTitle = createElement("h3", "todo-title", todo.title);
+
+        const todoCheckbox = createElement("input", "checkbox");
+
+        todoCheckbox.setAttribute("type", "checkbox");
+
+        appendTo(todoElement, todoCheckbox, todoTitle);
+
+        appendTo(todosElement, todoElement);
+    });
+    
+    return todosElement;
+}
+
+function createProjectDialog() {
+
+    const dialog = createElement("dialog", "project-dialog");
+    dialog.setAttribute("closedBy", "any");
+
+    const form = createElement("form");
+    form.setAttribute("method", "dialog");
+
+    const input = createElement("input", "project-name");
+    input.setAttribute("placeholder", "Project Title");
+    input.setAttribute("required", "true");
+
+    const button = createElement("button");
+    button.innerText = "Add Project";
+
+    appendTo(form, input, button);
+    appendTo(dialog, form)
+    appendTo(contentDiv, dialog)
+
+    pubsub.emmit("projectDialogCreated", {dialog, input, button});
+}
+
+function singleProjectView({project, projectIndex}) {
+
+    if(contentDiv.innerHTML !== "") {
+        contentDiv.innerHTML = "";
+    }
+
+    actionButton.innerHTML = backIcon;
+    for (const attr of Array.from(actionButton.attributes)) {
+        if(/^data-.*project/.test(attr.name)) {
+            actionButton.removeAttribute(attr.name);
+        }
+    }
+    actionButton.setAttribute("data-return", "");
+
+
+    const projectElement = createElement("div","expanded-project");
+
+    const header = createElement("div", "project-header");
+    const title = createElement("h2", "project-title", project.title);
+
+    appendTo(header, title);
+    appendTo(projectElement, header);
+
+    projectElement.dataset.id = projectIndex;
+
+    const todoElements = project.todos.map(createTodoElement);
+
+    todoElements.forEach(todoElement => appendTo(projectElement, todoElement));
+
+    addAddTodoButton(projectElement);
+
+    appendTo(contentDiv, projectElement)
+
+    currentDisplayedProjects.push(projectElement);
+
     createTodoDialog();
     pubsub.emmit("projectsDisplayed", currentDisplayedProjects);
 }
@@ -69,32 +168,27 @@ function createTodoElement(todo, index) {
 
     todoCheckbox.setAttribute("type", "checkbox");
 
-    appendTo(todoElement, todoCheckbox, todoTitle);
+    const buttons = createElement("div", "todo-buttons");
+
+    const deleteButton = createElement("button", "delete-todo-button");
+    deleteButton.innerHTML = trashIcon;
+    deleteButton.dataset.id = "delete-todo-button";
+
+    const editButton = createElement("button", "edit-todo-button");
+    editButton.innerHTML = pencilIcon;
+    editButton.dataset.id = "edit-todo-button";
+
+    const menuButton = createElement("button", "expand-todo-button");
+    menuButton.innerHTML = menuIcon;
+    menuButton.dataset.id = "expand-todo-button";
+
+    appendTo(buttons, editButton, deleteButton, menuButton);
+
+    appendTo(todoElement, todoCheckbox, todoTitle, buttons);
     
     return todoElement;
 }
 
-function createProjectDialog() {
-
-    const dialog = createElement("dialog", "project-dialog");
-    dialog.setAttribute("closedBy", "any");
-
-    const form = createElement("form");
-    form.setAttribute("method", "dialog");
-
-    const input = createElement("input", "project-name");
-    input.setAttribute("placeholder", "Project Title");
-    input.setAttribute("required", "true");
-
-    const button = createElement("button");
-    button.innerText = "Add Project";
-
-    appendTo(form, input, button);
-    appendTo(dialog, form)
-    appendTo(contentDiv, dialog)
-
-    pubsub.emmit("projectDialogCreated", {dialog, input, button});
-}
 function createTodoDialog() {
 
     if(document.querySelector(".todo-dialog")) return;

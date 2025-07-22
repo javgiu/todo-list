@@ -6,6 +6,8 @@
     --top-shadow: 0 -3px 3px rgb(224, 224, 224);
     --shadow: 3px 3px 3px rgb(224, 224, 224);
     --clr-shadow: 0 0 3px 2px hsl(22, 100%, 50%);
+    --clr-svg: grey;
+    --clr-btn-hvr: rgb(228, 228, 228);
 }
 
 html {
@@ -21,6 +23,10 @@ body {
     display: grid;
     grid-template-columns: minmax(250px, 1fr) 5fr;
     grid-template-rows: 1fr 8fr 1fr;
+}
+
+button svg {
+    pointer-events: none;
 }
 
 .flex-column-group {
@@ -204,10 +210,11 @@ nav {
     text-shadow: 3px 3px 3px hsl(22, 100%, 50%, 0.5);
 
     display: flex;
+    align-items: center;
     gap: 10px;
 }
 
-.add-project-button {
+.action-button {
     border-radius: 50px;
     height: 50px;
     aspect-ratio: 1;
@@ -215,9 +222,9 @@ nav {
     background-color: inherit;
 }
 
-.add-project-button:hover {
+.action-button:hover {
     cursor: pointer;
-    background-color: rgb(228, 228, 228);
+    background-color: var(--clr-btn-hvr);
 }
 
 .sidebar {
@@ -237,7 +244,7 @@ nav {
     top: 96px;
 }
 
-.sidebar ul > li {
+.option {
     display: flex;
     align-items: center;
     gap: 0.25rem;
@@ -278,13 +285,13 @@ nav {
     position: relative;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    grid-auto-rows: 300px;
     gap: 2rem;
 }
 
 .project {
-    border-radius: 20px;
+    border-radius: 10px;
     border: 2px solid var(--clr-primary);
+    height: 250px;
     display: flex;
     flex-direction: column;
     transition: all 0.4s ease-in-out;
@@ -294,7 +301,7 @@ nav {
 
 .project-header {
     display: flex;
-    padding: 1rem 1.5rem;
+    padding: 0.5rem 1.5rem;
     border-bottom: 2px solid var(--clr-primary);
     align-items: center;
     justify-content: space-between;
@@ -306,31 +313,17 @@ nav {
     background-color: inherit;
 }
 
-.project-header > svg {
-    width: 40px;
-    height: 40px;
-    fill: var(--clr-primary)
-}
-
 .project-header > button:hover {
-    background-color: rgb(228, 228, 228);
+    background-color: var(--clr-btn-hvr);
     cursor: pointer;
-}
-
-.project-title {
-    
 }
 
 .project:hover {
     transform: translateY(-10px);
     transition: 0.4s ease-out;
     box-shadow: 0 10px 10px rgb(194, 189, 189);
-    .add-todo-button {
-        opacity: 0.5;
-        svg {
-            fill: gray;
-        }
-    }
+    cursor: pointer;
+
 }
 
 .delete-project-button {
@@ -350,16 +343,54 @@ nav {
     background-color: red;
 }
 
+.todos {
+    flex: 1;
+    display: grid;
+}
+
 .todo {
     padding: 0.5rem 1rem;
     display: flex;
     align-items: center;
     border-bottom: var(--border);
+
+    .todo-buttons {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+        opacity: 0;
+
+        * {
+            padding: 2px;
+            display: grid;
+            place-items: center;
+            border: none;
+            background-color: inherit;
+            border-radius: 50%;
+        }
+
+        *:hover {
+            svg:nth-of-type(1){
+                fill: var(--clr-primary);
+            }
+        }
+
+        svg {
+            width: 30px;
+            height: 30px;
+        }
+    }
 }
 
 .todo:hover {
-    background-color: hsl(22, 100%, 65%);
-    cursor: pointer;
+    .todo-buttons {
+        transition: opacity 0.2s;
+        opacity: 1;
+
+        svg {
+            fill: grey;
+        }
+    }
 }
 
 .todo-title {
@@ -368,6 +399,7 @@ nav {
 
 .add-todo-button {
     border: 2px dashed gray;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -375,8 +407,19 @@ nav {
     margin: 2px 2px;
     background-color: transparent;
 }
+.expanded-project .add-todo-button > svg {
+    height: 40px;
+    width: 40px;
+}
 
-.project .add-todo-button:hover {
+.expanded-project:hover .add-todo-button {
+    opacity: 0.5;
+    svg {
+        fill: gray;
+    }
+}
+
+.expanded-project .add-todo-button:hover {
     border-color: var(--clr-primary);
     opacity: 1;
     cursor: pointer;
