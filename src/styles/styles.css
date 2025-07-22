@@ -33,6 +33,7 @@ button svg {
     display: flex;
     flex-direction: column;
 }
+
 dialog {
     position: absolute;
     top: 50%;
@@ -98,6 +99,7 @@ dialog::backdrop {
         }
         select {
             text-transform: capitalize;
+            background-color: white;
         }
         button {
             padding: 0.5rem;
@@ -128,11 +130,9 @@ input[type='checkbox'] {
     position: relative;
     overflow: hidden;
     border-radius: 2px;
-    outline: 3px solid var(--clr-primary);
-}
-
-input[type='checkbox']:focus {
-    box-shadow: 0 0 10px var(--clr-primary);    
+    outline: 3px solid inherit;
+    background-color: white;
+    max-height: 20px;
 }
 
 input[type='checkbox']:hover {
@@ -141,7 +141,7 @@ input[type='checkbox']:hover {
 }
 
 input[type='checkbox']:checked {
-    background-color: var(--clr-primary);
+    background-color: white;
 }
 
 input[type='checkbox']:checked::before {
@@ -149,7 +149,7 @@ input[type='checkbox']:checked::before {
     position: absolute;
     width: 4px;
     height: 27px;
-    background-color: white;
+    background-color: inherit;
     bottom: 0;
     left: 50%;
     transform-origin: bottom;
@@ -165,7 +165,7 @@ input[type='checkbox']:checked::after {
     position: absolute;
     width: 4px;
     height: 10px;
-    background-color: white;
+    background-color: inherit;
     bottom: 0;
     left: 50%;
     transform-origin: bottom;
@@ -177,7 +177,7 @@ input[type='checkbox']:checked::after {
 
 input[type='checkbox']:checked + h3 {
     text-decoration: line-through;
-    color: grey
+    color: black;
 }
 
 
@@ -297,25 +297,37 @@ nav {
     transition: all 0.4s ease-in-out;
     box-shadow: 0 2px 10px 1px rgb(194, 189, 189);
     overflow: auto;
-}
 
-.project-header {
-    display: flex;
-    padding: 0.5rem 1.5rem;
-    border-bottom: 2px solid var(--clr-primary);
-    align-items: center;
-    justify-content: space-between;
-}
+    .project-header {
+        display: flex;
+        padding: 0.5rem 1.5rem;
+        border-bottom: 2px solid var(--clr-primary);
+        align-items: center;
+        justify-content: space-between;
+    }
 
-.project-header > button {
-    border-radius: 50px;
-    border: none;
-    background-color: inherit;
-}
+    .project-header > button {
+        border-radius: 50px;
+        border: none;
+        background-color: inherit;
+    }
 
-.project-header > button:hover {
-    background-color: var(--clr-btn-hvr);
-    cursor: pointer;
+    .project-header > button:hover {
+        background-color: var(--clr-btn-hvr);
+        cursor: pointer;
+    }
+
+    .todos {
+        flex: 1;
+        display: grid;
+
+        .todo {
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            border-bottom: var(--border);
+        }
+    }
 }
 
 .project:hover {
@@ -343,58 +355,79 @@ nav {
     background-color: red;
 }
 
-.todos {
-    flex: 1;
-    display: grid;
-}
+.expanded-project {
 
-.todo {
-    padding: 0.5rem 1rem;
-    display: flex;
-    align-items: center;
-    border-bottom: var(--border);
+    .todos {
+        flex: 1;
+        display: grid;
 
-    .todo-buttons {
-        margin-left: auto;
-        display: flex;
-        gap: 10px;
-        opacity: 0;
-
-        * {
-            padding: 2px;
+        .todo {
+            padding: 0.5rem 1rem;
             display: grid;
-            place-items: center;
-            border: none;
-            background-color: inherit;
-            border-radius: 50%;
-        }
+            grid-template-columns: 1fr 0.5fr;
+            grid-auto-rows: min-content;
+            align-items: center;
+            border-bottom: var(--border);
 
-        *:hover {
-            svg:nth-of-type(1){
-                fill: var(--clr-primary);
+            .todo-title {
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+                grid-row: span 2;
+            }
+
+            .todo-properties {
+                display: flex;
+                grid-column: 2;
+                justify-self: center;
+            }
+
+            .todo-buttons {
+                display: flex;
+                gap: 10px;
+                opacity: 0;
+                justify-self: center;
+                * {
+                    padding: 2px;
+                    display: grid;
+                    place-items: center;
+                    border: none;
+                    background-color: inherit;
+                    border-radius: 50%;
+                }
+
+                button:hover {
+                    svg:nth-of-type(1){
+                        transition: scale 0.2s;
+                        fill: white;
+                        scale: 1.2;
+                    }
+                }
+
+                svg {
+                    width: 30px;
+                    height: 30px;
+                }
+            }
+
+            .todo-title {
+                padding-inline-start: 1rem;
             }
         }
 
-        svg {
-            width: 30px;
-            height: 30px;
+        .todo:hover {
+            .todo-buttons {
+                transition: opacity 0.2s;
+                opacity: 1;
+            }
+
+            svg {
+                fill: rgba(255, 255, 255, 0.397);
+            }
         }
+
     }
-}
 
-.todo:hover {
-    .todo-buttons {
-        transition: opacity 0.2s;
-        opacity: 1;
-
-        svg {
-            fill: grey;
-        }
-    }
-}
-
-.todo-title {
-    padding-inline-start: 1rem;
 }
 
 .add-todo-button {
@@ -426,6 +459,36 @@ nav {
     svg {
         fill: var(--clr-primary);
     }
+}
+
+.todo.high {
+    background-color: rgb(230, 60, 60);
+    color: white;
+
+    input[type='checkbox']:checked::after,
+    input[type='checkbox']:checked::before {
+        background-color: rgb(230, 60, 60);
+    } 
+}
+
+.todo.medium {
+    background-color: orangered;
+    color: white;
+
+    input[type='checkbox']:checked::after,
+    input[type='checkbox']:checked::before {
+        background-color: orangered;
+    } 
+}
+
+.todo.low {
+    background-color: rgb(47, 199, 47);
+    color: white;
+
+    input[type='checkbox']:checked::after,
+    input[type='checkbox']:checked::before {
+        background-color: rgb(47, 199, 47);
+    } 
 }
 
 footer {

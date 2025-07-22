@@ -43,7 +43,7 @@ const project1 = new Project("Logo suegrita");
 const project2 = new Project("Do It Project");
 const project3 = new Project("Business Meeting");
 
-const l1 = new Todo("Hacer logo de mi suegra");
+const l1 = new Todo("Hacer logo de mi suegra", 3);
 const l2 = new Todo("Aprender mas Krita", 1);
 const l3 = new Todo("Terminar retrato del Nicholas", 2);
 
@@ -70,7 +70,6 @@ function addNewTodo(projectIndex) {
 }
 
 function updateNewTodo({title, dueDate, priority}) {
-    console.log(title, dueDate, priority);
     const project = projects[onProject];
     const todos = project.todos;
     const todo = todos[todos.length - 1];

@@ -6,6 +6,7 @@ import trash from "../assets/icons/trash.svg";
 import menu from "../assets/icons/menu.svg";
 import back from "../assets/icons/arrow-left.svg"
 import pubsub from "./PubSub";
+import { formatDate } from "date-fns";
 
 const actionButton = document.querySelector(".action-button");
 const menuIcon = menu;
@@ -134,9 +135,13 @@ function singleProjectView({project, projectIndex}) {
 
     projectElement.dataset.id = projectIndex;
 
+    const todosDiv = createElement("div", "todos");
+
     const todoElements = project.todos.map(createTodoElement);
 
-    todoElements.forEach(todoElement => appendTo(projectElement, todoElement));
+    todoElements.forEach(todoElement => appendTo(todosDiv, todoElement));
+
+    appendTo(projectElement, todosDiv);
 
     addAddTodoButton(projectElement);
 
@@ -162,13 +167,56 @@ function createTodoElement(todo, index) {
     const todoElement = createElement("div", "todo")
 
     todoElement.dataset.id = index;
-    const todoTitle = createElement("h3", "todo-title", todo.title);
+    const todoTitle = createElement("div", "todo-title");
 
     const todoCheckbox = createElement("input", "checkbox");
 
     todoCheckbox.setAttribute("type", "checkbox");
 
-    const buttons = createElement("div", "todo-buttons");
+    const todoTitleText = createElement("h3", "", todo.title);
+
+    appendTo(todoTitle, todoCheckbox, todoTitleText);
+
+    const buttons = createTodoButtons();
+
+    const properties = createTodoProperties(todo);
+
+    appendTo(todoElement, todoTitle, buttons, properties);
+
+    addPriorityClass(todoElement, todo.priority);
+    
+    return todoElement;
+}
+
+function addPriorityClass(element, priority) {
+        switch(priority) {
+        case 1:
+            element.classList.add("high");
+            break;
+        case 2:
+            element.classList.add("medium");
+            break;
+        case 3:
+            element.classList.add("low");
+            break;
+        default:
+            break;
+    }
+}
+
+function createTodoProperties(todo) {
+    const propertiesPanel = createElement("div", "todo-properties");
+
+    const date = createElement("p", "todo-date");
+    date.textContent = `${todo.dueDate}`;
+
+    appendTo(propertiesPanel, date);
+
+    return propertiesPanel;
+}
+
+function createTodoButtons() {
+        const buttons = createElement("div", "todo-buttons");
 
     const deleteButton = createElement("button", "delete-todo-button");
     deleteButton.innerHTML = trashIcon;
@@ -184,9 +232,7 @@ function createTodoElement(todo, index) {
 
     appendTo(buttons, editButton, deleteButton, menuButton);
 
-    appendTo(todoElement, todoCheckbox, todoTitle, buttons);
-    
-    return todoElement;
+    return buttons;
 }
 
 function createTodoDialog() {
