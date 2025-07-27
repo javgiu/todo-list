@@ -1,10 +1,10 @@
 import { format } from "date-fns";
 
 export default class Todo {
-    constructor(title, priority = 3, dueDate = "", description = "",  notes = "", checklist = "Working on it!") {
+    constructor(title, priority = 3, dueDate = "", description = "Working on it!",  notes = "Working on it!", checklist = "Working on it!") {
         this.title = title;
         this.description = description;
-        this.dueDate = validateDate(dueDate);
+        this.dueDate = dueDate;
         this.priority = priority;
         this.notes = notes;
         this.checklist = checklist;
@@ -12,8 +12,7 @@ export default class Todo {
 
     update(title, dueDate, priority) {
         this.title = title;
-        console.log(dueDate)
-        this.dueDate = validateDate(dueDate);
+        this.dueDate = dueDate;
         switch(priority) {
             case "low":
                 this.priority = 3;
@@ -25,13 +24,5 @@ export default class Todo {
                 this.priority = 1;
                 break;
         }
-    }
-}
-
-function validateDate(date) {
-    if (date == "") {
-        return format(new Date(), "eee MMM/dd/yyyy");
-    } else {
-        return format(date, "eee MMM/dd/yyyy");
     }
 }

@@ -6,7 +6,7 @@ import trash from "../assets/icons/trash.svg";
 import menu from "../assets/icons/menu.svg";
 import back from "../assets/icons/arrow-left.svg"
 import pubsub from "./PubSub";
-import { formatDate } from "date-fns";
+import { format } from "date-fns";
 
 const actionButton = document.querySelector(".action-button");
 const menuIcon = menu;
@@ -17,17 +17,14 @@ const deleteSvg = deleteIcon;
 const backIcon = back;
 const contentDiv = document.querySelector("#content");
 
-let currentDisplayedProjects = [];
-
 pubsub.on("projectsUpdated", projectsView);
 pubsub.on("showNewProjectDialog", showProjectDialog)
 pubsub.on("showNewTodoDialog", showTodoDialog);
 pubsub.on("showProject", singleProjectView);
 
-export default function projectsView(projects = currentDisplayedProjects) {
-    if(contentDiv.innerHTML !== "") {
-        contentDiv.innerHTML = "";
-    }
+export default function projectsView(projects) {
+    
+    cleanContentDiv();
 
     actionButton.innerHTML = plusIcon;
     for (const attr of Array.from(actionButton.attributes)) {
@@ -40,11 +37,12 @@ export default function projectsView(projects = currentDisplayedProjects) {
     projects.forEach(project => {
 
         const projectElement = createElement("div","project");
+        projectElement.setAttribute("data-project", "");
         const header = createElement("div", "project-header");
         const title = createElement("h2", "project-title", project.title);
         const deleteProjectButton = createElement("button", "delete-project-button");
         deleteProjectButton.innerHTML = deleteSvg;
-        deleteProjectButton.dataset.id = "delete-project-button";
+        deleteProjectButton.setAttribute("data-delete-project", "");
         deleteProjectButton.dataset.index = projects.indexOf(project);
 
         appendTo(header, title, deleteProjectButton);
@@ -56,15 +54,10 @@ export default function projectsView(projects = currentDisplayedProjects) {
 
         appendTo(projectElement, todoElements);
 
-
-        appendTo(contentDiv, projectElement)
-
-        currentDisplayedProjects.push(projectElement);
-
+        appendTo(contentDiv, projectElement);
     });
 
     createProjectDialog();
-    pubsub.emmit("projectsDisplayed", currentDisplayedProjects);
 }
 
 function createTodosElement(todos) {
@@ -101,20 +94,17 @@ function createProjectDialog() {
     input.setAttribute("required", "true");
 
     const button = createElement("button");
+    button.setAttribute("data-create-project", "");
     button.innerText = "Add Project";
 
     appendTo(form, input, button);
     appendTo(dialog, form)
     appendTo(contentDiv, dialog)
-
-    pubsub.emmit("projectDialogCreated", {dialog, input, button});
 }
 
 function singleProjectView({project, projectIndex}) {
 
-    if(contentDiv.innerHTML !== "") {
-        contentDiv.innerHTML = "";
-    }
+    cleanContentDiv();
 
     actionButton.innerHTML = backIcon;
     for (const attr of Array.from(actionButton.attributes)) {
@@ -147,10 +137,7 @@ function singleProjectView({project, projectIndex}) {
 
     appendTo(contentDiv, projectElement)
 
-    currentDisplayedProjects.push(projectElement);
-
     createTodoDialog();
-    pubsub.emmit("projectsDisplayed", currentDisplayedProjects);
 }
 
 function addAddTodoButton(parent) {
@@ -158,7 +145,7 @@ function addAddTodoButton(parent) {
 
     button.innerHTML = plusIcon;
 
-    button.dataset.id = "add-todo-button";
+    button.setAttribute("data-add-todo", "");
 
     appendTo(parent, button);
 }
@@ -208,7 +195,7 @@ function createTodoProperties(todo) {
     const propertiesPanel = createElement("div", "todo-properties");
 
     const date = createElement("p", "todo-date");
-    date.textContent = `${todo.dueDate}`;
+    date.textContent = displayDate(todo.dueDate);
 
     appendTo(propertiesPanel, date);
 
@@ -254,17 +241,12 @@ function createTodoDialog() {
     const column3 = creator.labeledSelect({id: "priority", required: true, labelText: "Priority:", priorities: ["low", "medium", "high"]})
 
     const button = createElement("button");
+    button.setAttribute("data-create-todo", "");
     button.innerText = "Add Todo";
 
     appendTo(form, title, column1, column2, column3, button);
     appendTo(dialog, form);
     appendTo(contentDiv, dialog);
-
-    pubsub.emmit("todoDialogCreated", {
-        button, 
-        inputName: column1.querySelector("input"), 
-        inputDate: column2.querySelector("input"), 
-        inputPriority: column3.querySelector("select")});
 }
 
 function showProjectDialog() {
@@ -273,4 +255,19 @@ function showProjectDialog() {
 
 function showTodoDialog() {
     Array.from(contentDiv.children).find(element => element.className == "todo-dialog").showModal();
+}
+
+function displayDate(date) {
+    if (date == "") {
+        return format(new Date(), "eee MMM/dd/yyyy");
+    } else {
+        return format(date, "eee MMM/dd/yyyy");
+    }
+}
+
+function cleanContentDiv() {
+
+    if(contentDiv.innerHTML !== "") {
+        contentDiv.innerHTML = "";
+    }
 }

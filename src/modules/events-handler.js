@@ -1,13 +1,40 @@
+import { add } from "date-fns";
 import pubsub from "./PubSub";
 
-function addGlobalEvent(eventName, elementSelector, callback, parent = document) {
-    parent.addEventListener(eventName, (e) => {
-        if(e.target.matches(elementSelector)) {
-            callback(e);
+function addGlobalEvent(eventName, elementSelector, callback, currentListener = document, options = {}) {
+
+    const { useClosest = false, exceptions = null } = options;
+
+    currentListener.addEventListener(eventName, (e) => {
+
+        if (exceptions && exceptions.includes(e.target.nodeName)) return;
+
+        let targetElement = null;
+
+        if (useClosest) {
+            targetElement = e.target.closest(elementSelector);
+        } else if (e.target.matches(elementSelector)) {
+            targetElement = e.target;
+        }
+
+        if (targetElement && currentListener.contains(targetElement)) {
+            callback(e, targetElement);
         }
     })
 }
 
+// Project Div Event
+addGlobalEvent(
+    "click",
+    "[data-project]",
+    (e, project) => {
+        pubsub.emmit("requestProject", project.dataset.id);
+    },
+    document,
+    { useClosest: true, exceptions: ["BUTTON"] }
+);
+
+// Add Project Button Event
 addGlobalEvent(
     "click",
     "[data-add-project]",
@@ -16,6 +43,16 @@ addGlobalEvent(
     }
 );
 
+// Delete Project Button Event
+addGlobalEvent(
+    "click",
+    "[data-delete-project]",
+    (e) => {
+        pubsub.emmit("deleteProject", e.target.dataset.index)
+    }
+);
+
+// Return Button Event
 addGlobalEvent(
     "click",
     "[data-return]",
@@ -24,6 +61,7 @@ addGlobalEvent(
     }
 );
 
+// Delete Todo Button Event
 addGlobalEvent(
     "click",
     "[data-delete-todo]",
@@ -33,59 +71,44 @@ addGlobalEvent(
             projectIndex: e.target.closest(".expanded-project").dataset.id 
         })
     }
-)
+);
 
-pubsub.on("projectsDisplayed", addProjectEvents);
-pubsub.on("todoDialogCreated", ({
-    button, 
-    inputName, 
-    inputDate, 
-    inputPriority}) => {
-        button.addEventListener("click", () => {
-            pubsub.emmit("updateNewTodo", {
-                title: inputName.value, 
-                dueDate: inputDate.value, 
-                priority: inputPriority.value
-            });
+// Add Todo Button Event
+addGlobalEvent(
+    "click",
+    "[data-add-todo]",
+    (e) => {
+        pubsub.emmit("showNewTodoDialog");
+    }
+);
+
+// Create Project Button on Dialog Event
+addGlobalEvent(
+    "click",
+    "[data-create-project]",
+    (e) => {
+        const input = e.target.previousSibling;
+        const projectName = input.value;
+        pubsub.emmit("createNewProjectRequested", projectName);
+    }
+);
+
+// Todo Dialog Button Event
+addGlobalEvent(
+    "click",
+    "[data-create-todo]",
+    (e) => {
+        const formElement = e.target.parentElement;
+        const name = formElement.querySelector("#name");
+        const date = formElement.querySelector("#due-date");
+        const priority = formElement.querySelector("#priority");
+
+        pubsub.emmit("createNewTodoRequested", {
+            title: name.value,
+            dueDate: date.value,
+            priority: priority.value
         });
-});
 
-pubsub.on("projectDialogCreated", ({ button, input }) => {
-    button.addEventListener("click", ()=> {
-        pubsub.emmit("createNewProjectRequested", input.value)
-    })
-})
-
-function addProjectEvents(projects) {
-    projects.forEach((project) => project.addEventListener("click", (e) => {
-        if(e.target.closest("button")) {
-            const button = e.target.closest("button");
-            switch(button.dataset.id) {
-            case "delete-project-button":
-                pubsub.emmit("deleteProject", button.dataset.index)
-                break;
-            case "add-todo-button":
-                pubsub.emmit("showNewTodoDialog");
-                pubsub.emmit("createNewTodo", button.parentElement.dataset.id);
-                break;
-            case "delete-todo-button":
-                pubsub.emmit("deleteTodo", {
-                    todo: button.closest(".todo").dataset.id, 
-                    project: button.closest(".project").dataset.id 
-                });
-                break; 
-            case "edit-todo-button": 
-                break; 
-            case "expand-todo-button": 
-                break; 
-            default:
-                break;
-            }
-        } else if(e.target.nodeName == "INPUT") {
-            return;
-        } else {
-            pubsub.emmit("requestProject", project.dataset.id);
-        }
-        
-    }));    
-};
+        console.log(name.value)
+    }
+)

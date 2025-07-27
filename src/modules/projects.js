@@ -1,28 +1,6 @@
 import Todo from "./todos"
 import pubsub from "./PubSub";
 
-const projects = [];
-
-let onProject = 0;
-
-pubsub.on("backToProjects", () => {
-    pubsub.emmit("projectsUpdated", projects)
-})
-pubsub.on("createNewProjectRequested", createNewProject);
-pubsub.on("deleteProject", deleteProject);
-pubsub.on("createNewTodo", addNewTodo);
-pubsub.on("updateNewTodo", updateNewTodo);
-pubsub.on("deleteTodo", deleteTodo);
-pubsub.on("requestProject", (projectIndex) => pubsub.emmit("showProject", {
-    project: projects[projectIndex],
-    projectIndex
-}));
-
-
-function fillProjects(...projectsArray) {
-        projectsArray.forEach(project => projects.push(project));
-    }
-
 class Project {
     constructor(title, dueDate = "") {
         this.title = title;
@@ -39,6 +17,35 @@ class Project {
     }
 }
 
+
+const projects = [];
+
+let expandedProjectIndex = 0;
+
+pubsub.on("backToProjects", () => {
+    pubsub.emmit("projectsUpdated", projects)
+})
+pubsub.on("createNewProjectRequested", createNewProject);
+pubsub.on("deleteProject", deleteProject);
+pubsub.on("createNewTodoRequested", createNewTodo);
+pubsub.on("deleteTodo", deleteTodo);
+
+// Working here
+
+pubsub.on("requestProject", (projectIndex) => {
+    pubsub.emmit("showProject", {
+        project: projects[projectIndex],
+        projectIndex
+    })
+    expandedProjectIndex = projectIndex;
+});
+
+
+function fillProjects(...projectsArray) {
+    projectsArray.forEach(project => projects.push(project));
+}
+
+
 const project1 = new Project("Logo suegrita");
 const project2 = new Project("Do It Project");
 const project3 = new Project("Business Meeting");
@@ -51,7 +58,11 @@ project1.fill(l1,l2,l3);
 
 fillProjects(project1, project2, project3);
 
+// Sort todos
+
 projects.forEach(project => project.sortTodosByPriority());
+
+// Create new project
 
 function createNewProject(title) {
     const newProject = new Project(title)
@@ -64,22 +75,19 @@ function deleteProject(index) {
     pubsub.emmit("projectsUpdated", projects);
 }
 
-function addNewTodo(projectIndex) {
-    projects[projectIndex].todos.push(new Todo("Nueva tarea"));
-    onProject = projectIndex;
-}
+// Work here
 
-function updateNewTodo({title, dueDate, priority}) {
-    const project = projects[onProject];
-    const todos = project.todos;
-    const todo = todos[todos.length - 1];
+function createNewTodo({title, dueDate, priority}) {
+
+    const project = projects[expandedProjectIndex];
+    const todo = new Todo();
     todo.update(title, dueDate, priority);
-    projects.forEach(project => project.sortTodosByPriority());
-    console.log(projects);
+    project.todos.push(todo);
+    project.sortTodosByPriority();
 
     pubsub.emmit("showProject", {
         project,
-        projectIndex: onProject
+        projectIndex: expandedProjectIndex
     });
 }
 
