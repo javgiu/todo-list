@@ -9,20 +9,20 @@ export default class Todo {
         this.notes = notes;
         this.checklist = checklist;
     }
+}
 
-    update(title, dueDate, priority) {
-        this.title = title;
-        this.dueDate = dueDate;
-        switch(priority) {
-            case "low":
-                this.priority = 3;
-                break;
-            case "medium":
-                this.priority = 2;
-                break;
-            case "high":
-                this.priority = 1;
-                break;
-        }
+export function updateTodo(todo, { title, dueDate, priority }) {
+    todo.title = title;
+    todo.dueDate = dueDate;
+    switch(priority) {
+        case "low":
+            todo.priority = 3;
+            break;
+        case "medium":
+            todo.priority = 2;
+            break;
+        case "high":
+            todo.priority = 1;
+            break;
     }
 }
