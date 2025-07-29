@@ -1,28 +1,25 @@
 import { format } from "date-fns";
 
 export default class Todo {
-    constructor(title, priority = 3, dueDate = "", description = "Working on it!",  notes = "Working on it!", checklist = "Working on it!") {
+    constructor(title = "New Project", priority = 3, dueDate = new Date(), description = "Working on it!",  notes = "Working on it!", checklist = "Working on it!") {
         this.title = title;
         this.description = description;
         this.dueDate = dueDate;
-        this.priority = priority;
+        this.priority = validatePriority(priority);
         this.notes = notes;
         this.checklist = checklist;
     }
 }
 
-export function updateTodo(todo, { title, dueDate, priority }) {
-    todo.title = title;
-    todo.dueDate = dueDate;
+function validatePriority(priority) {
     switch(priority) {
         case "low":
-            todo.priority = 3;
-            break;
+            return priority = 3;
         case "medium":
-            todo.priority = 2;
-            break;
+            return priority = 2;
         case "high":
-            todo.priority = 1;
-            break;
+            return priority = 1;
+        default:
+            return priority;
     }
 }
