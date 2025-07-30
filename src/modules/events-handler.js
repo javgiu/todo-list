@@ -78,7 +78,7 @@ addGlobalEvent(
     "click",
     "[data-add-todo]",
     (e) => {
-        pubsub.emmit("showNewTodoDialog");
+        pubsub.emmit("showNewTodoDialog", { func: "data-create-todo" });
     }
 );
 
@@ -110,8 +110,6 @@ addGlobalEvent(
             priority: priority.value,
             description: description.value 
         });
-
-        console.log(name.value)
     }
 )
 
@@ -121,5 +119,36 @@ addGlobalEvent(
     (e, button) => {
         const todoElement = button.parentElement.parentElement;
         pubsub.emmit("expandTodo", { button, todoElement });
+    }
+);
+
+// Edit todo button event
+
+addGlobalEvent(
+    "click",
+    "[edit-todo-button]",
+    (e, button) => {
+        pubsub.emmit("selectedTodoFotEdit", button.parentElement.parentElement.dataset.id);
+    }
+);
+
+// Todo dialog button event for edit todo
+
+addGlobalEvent(
+    "click",
+    "[data-edit-todo]",
+    (e, button) => {
+        const formElement = e.target.parentElement;
+        const name = formElement.querySelector("#name");
+        const date = formElement.querySelector("#due-date");
+        const priority = formElement.querySelector("#priority");
+        const description = formElement.querySelector("#description");
+
+        pubsub.emmit("editTodo", {
+            title: name.value,
+            dueDate: date.value,
+            priority: priority.value,
+            description: description.value 
+        });
     }
 );

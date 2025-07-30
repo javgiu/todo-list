@@ -11,7 +11,7 @@ export default class Todo {
     }
 }
 
-function validatePriority(priority) {
+export function validatePriority(priority) {
     switch(priority) {
         case "low":
             return priority = 3;

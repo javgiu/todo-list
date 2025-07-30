@@ -24,12 +24,16 @@ export const creator = {
         input.setAttribute("required", props.required);
         input.setAttribute("id", props.id);
         input.setAttribute("type", props.type);
+        input.value = props.value;
+        if(props.type == "date") {
+            input.valueAsDate = props.value;
+        }
 
         appendTo(container, label, input);
         return container;
     },
 
-    labeledSelect({name, id, labelText, options = 3, priorities}) {
+    labeledSelect({name, id, labelText, options = 3, priorities, value}) {
         if(!name) name = "";
         const container = createElement("div", `flex-column-group ${name}`);
         const label = document.createElement("label");
@@ -42,6 +46,9 @@ export const creator = {
             const option = document.createElement("option");
             option.innerText = priorities[i];
             option.setAttribute("value", priorities[i]);
+            if(i + 1 == value) {
+                option.selected = true;
+            }
             appendTo(select, option);
         }
         
@@ -106,10 +113,11 @@ function createLabel({ id, labelText }) {
     return label;
 }
 
-function createTextarea({ id, cols, rows }) {
+function createTextarea({ id, cols, rows, value }) {
     const textarea = document.createElement("textarea");
     textarea.setAttribute("id", id);
     textarea.setAttribute("cols", cols);
     textarea.setAttribute("rows", rows);
+    textarea.value = value;
     return textarea;
 }

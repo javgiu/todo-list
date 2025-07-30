@@ -21,7 +21,7 @@ const closeSvg = closeIcon
 
 pubsub.on("projectsUpdated", projectsView);
 pubsub.on("showNewProjectDialog", showProjectDialog)
-pubsub.on("showNewTodoDialog", showTodoDialog);
+pubsub.on("showNewTodoDialog", createTodoDialog);
 pubsub.on("showProject", singleProjectView);
 pubsub.on("expandTodo", expandTodoElement);
 
@@ -139,8 +139,6 @@ function singleProjectView({project, projectIndex}) {
     addAddTodoButton(projectElement);
 
     appendTo(contentDiv, projectElement)
-
-    createTodoDialog();
 }
 
 function addAddTodoButton(parent) {
@@ -229,9 +227,30 @@ function createTodoButtons() {
     return buttons;
 }
 
-function createTodoDialog() {
+function createTodoDialog({ func, todo }) {
 
-    if(document.querySelector(".todo-dialog")) return;
+    if(document.querySelector(".todo-dialog")) {
+        contentDiv.removeChild(document.querySelector(".todo-dialog"));
+    };
+
+    let titleText = "New Todo";
+    console.log(todo.title);
+
+    let todoTitle = "";
+    let todoDate = "";
+    let todoPriority = "";
+    let todoDescription = "";
+
+    if(func == "data-edit-todo") {
+        titleText = "Edit Todo";
+    }
+
+    if(todo) {
+        todoTitle = todo.title;
+        todoDate = todo.dueDate;
+        todoPriority = todo.priority;
+        todoDescription = todo.description;
+    }
 
     const dialog = createElement("dialog", "todo-dialog");
     dialog.setAttribute("closedBy", "any");
@@ -239,20 +258,24 @@ function createTodoDialog() {
     const form = createElement("form");
     form.setAttribute("method", "dialog");
 
-    const title = createElement("h3", "form-title", "New Todo");
+    const title = createElement("h3", "form-title", titleText);
 
     const column1 = creator.labeledInput({
         id: "name", 
         type: "text", 
         required: true, 
-        labelText: "Name:"
+        labelText: "Name:",
+        value: todo.title
     })
+
+    console.log(format(todoDate, "MM/dd/yyyy"))
 
     const column2 = creator.labeledInput({
         id: "due-date", 
         type: "date", 
         required: false, 
-        labelText: "Due date:"
+        labelText: "Due date:",
+        value: new Date(todoDate)
     })
 
     const column3 = create({
@@ -266,28 +289,37 @@ function createTodoDialog() {
             textarea: {
                 id: "description",
                 cols: 50,
-                rows: 7
+                rows: 7,
+                value: todoDescription
             }
         }
     })
 
-    const column4 = creator.labeledSelect({id: "priority", required: true, labelText: "Priority:", priorities: ["low", "medium", "high"]})
+    const column4 = creator.labeledSelect({
+        id: "priority", 
+        required: true, 
+        labelText: "Priority:", 
+        priorities: ["high", "medium", "low"],
+        value: todoPriority
+    })
 
     const button = createElement("button");
-    button.setAttribute("data-create-todo", "");
+    button.setAttribute(func, "");
     button.innerText = "Add Todo";
 
     appendTo(form, title, column1, column2, column3, column4, button);
     appendTo(dialog, form);
     appendTo(contentDiv, dialog);
+
+    showTodoDialog(dialog);
 }
 
 function showProjectDialog() {
     Array.from(contentDiv.children).find(element => element.className == "project-dialog").showModal();
 }
 
-function showTodoDialog() {
-    Array.from(contentDiv.children).find(element => element.className == "todo-dialog").showModal();
+function showTodoDialog(dialog) {
+   dialog.showModal();
 }
 
 function displayDate(date) {

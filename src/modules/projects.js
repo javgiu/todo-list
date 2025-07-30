@@ -1,10 +1,12 @@
-import Todo from "./todos"
+import Todo, {validatePriority} from "./todos"
 import pubsub from "./PubSub";
 import { storage, getFromStorage } from "./storage-manager";
 
 pubsub.on("backToProjects", () => {
     pubsub.emmit("projectsUpdated", projects)
 })
+pubsub.on("selectedTodoFotEdit", selectTodo);
+pubsub.on("editTodo", updateTodo);
 pubsub.on("createNewProjectRequested", createNewProject);
 pubsub.on("deleteProject", deleteProject);
 pubsub.on("createNewTodoRequested", createNewTodo);
@@ -28,6 +30,7 @@ class Project {
 const projects = [];
 
 let expandedProjectIndex = 0;
+let todoSelectedForEdit = null;
 
 // Add default Project
 
@@ -48,6 +51,12 @@ projects.forEach(project => {
 });
 
 // // Functions // //
+
+function selectTodo(todoIndex) {
+    todoSelectedForEdit = todoIndex;
+    pubsub.emmit("showNewTodoDialog", { func: "data-edit-todo", todo: projects[expandedProjectIndex].todos[todoSelectedForEdit] });
+
+}
 
 // Create project function
 
@@ -78,7 +87,6 @@ function createNewTodo({ title, dueDate, priority, description }) {
         project,
         projectIndex: expandedProjectIndex
     });
-
 }
 
 // Delete todo using todo & project indexes
@@ -95,10 +103,23 @@ function deleteTodo({ todoIndex, projectIndex }) {
 
 // Working on update or edit todo
 
-function updateTodo({ todo = new Todo(), title = "New Todo", dueDate = new Date(), priority = 3 }) {
+function updateTodo({title = "New Todo", dueDate = new Date(), priority = 3,  description = "Add Description"}) {
+    const project = projects[expandedProjectIndex];
+    const todo = project.todos[todoSelectedForEdit];
     todo.title = title;
     todo.dueDate = dueDate;
     todo.priority = validatePriority(priority);
+    todo.description = description;
+
+    sortTodosByPriority(project);
+
+    pubsub.emmit("projectsUpdated", projects);
+
+    // Refresh display to show new Todo added
+    pubsub.emmit("showProject", {
+        project,
+        projectIndex: expandedProjectIndex
+    });
 }
 
 // Fill project
