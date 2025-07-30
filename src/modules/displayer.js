@@ -1,11 +1,12 @@
-import { appendTo, createElement, creator } from "../libraries/DOM";
-import plus from "../assets/icons/plus.svg"
+import { appendTo, createElement, creator, create } from "../libraries/DOM";
+import plus from "../assets/icons/plus.svg";
 import deleteIcon from "../assets/icons/delete.svg";
 import pencil from "../assets/icons/pencil.svg";
 import trash from "../assets/icons/trash.svg";
 import menu from "../assets/icons/menu.svg";
-import back from "../assets/icons/arrow-left.svg"
+import back from "../assets/icons/arrow-left.svg";
 import pubsub from "./PubSub";
+import closeIcon from "../assets/icons/close.svg";
 import { format } from "date-fns";
 
 const actionButton = document.querySelector(".action-button");
@@ -16,11 +17,13 @@ const plusIcon = plus;
 const deleteSvg = deleteIcon;
 const backIcon = back;
 const contentDiv = document.querySelector("#content");
+const closeSvg = closeIcon
 
 pubsub.on("projectsUpdated", projectsView);
 pubsub.on("showNewProjectDialog", showProjectDialog)
 pubsub.on("showNewTodoDialog", showTodoDialog);
 pubsub.on("showProject", singleProjectView);
+pubsub.on("expandTodo", expandTodoElement);
 
 export default function projectsView(projects) {
     
@@ -197,13 +200,17 @@ function createTodoProperties(todo) {
     const date = createElement("p", "todo-date");
     date.textContent = displayDate(todo.dueDate);
 
-    appendTo(propertiesPanel, date);
+    const description = createElement("textarea", "todo-description");
+    description.value = todo.description;
+    description.setAttribute("readonly", true);
+
+    appendTo(propertiesPanel, date, description);
 
     return propertiesPanel;
 }
 
 function createTodoButtons() {
-        const buttons = createElement("div", "todo-buttons");
+    const buttons = createElement("div", "todo-buttons");
 
     const deleteButton = createElement("button", "delete-todo-button");
     deleteButton.innerHTML = trashIcon;
@@ -211,11 +218,11 @@ function createTodoButtons() {
 
     const editButton = createElement("button", "edit-todo-button");
     editButton.innerHTML = pencilIcon;
-    editButton.dataset.id = "edit-todo-button";
+    editButton.setAttribute("edit-todo-button", "");
 
     const menuButton = createElement("button", "expand-todo-button");
     menuButton.innerHTML = menuIcon;
-    menuButton.dataset.id = "expand-todo-button";
+    menuButton.setAttribute("expand-todo-button", "");
 
     appendTo(buttons, editButton, deleteButton, menuButton);
 
@@ -234,17 +241,43 @@ function createTodoDialog() {
 
     const title = createElement("h3", "form-title", "New Todo");
 
-    const column1 = creator.labeledInput({id: "name", type: "text", required: true, labelText: "Name:"})
+    const column1 = creator.labeledInput({
+        id: "name", 
+        type: "text", 
+        required: true, 
+        labelText: "Name:"
+    })
 
-    const column2 = creator.labeledInput({id: "due-date", type: "date", required: false, labelText: "Due date:"})
+    const column2 = creator.labeledInput({
+        id: "due-date", 
+        type: "date", 
+        required: false, 
+        labelText: "Due date:"
+    })
 
-    const column3 = creator.labeledSelect({id: "priority", required: true, labelText: "Priority:", priorities: ["low", "medium", "high"]})
+    const column3 = create({
+        tagName: "div",
+        className: "flex-column-group",
+        children: {
+            label: {
+                id: "description",
+                labelText: "Description",
+            },
+            textarea: {
+                id: "description",
+                cols: 50,
+                rows: 7
+            }
+        }
+    })
+
+    const column4 = creator.labeledSelect({id: "priority", required: true, labelText: "Priority:", priorities: ["low", "medium", "high"]})
 
     const button = createElement("button");
     button.setAttribute("data-create-todo", "");
     button.innerText = "Add Todo";
 
-    appendTo(form, title, column1, column2, column3, button);
+    appendTo(form, title, column1, column2, column3, column4, button);
     appendTo(dialog, form);
     appendTo(contentDiv, dialog);
 }
@@ -270,4 +303,19 @@ function cleanContentDiv() {
     if(contentDiv.innerHTML !== "") {
         contentDiv.innerHTML = "";
     }
+}
+
+function expandTodoElement({ button, todoElement}) {
+    changeTodoClassAndButtonSVG(button, todoElement);
+
+}
+
+function changeTodoClassAndButtonSVG(button, todo) {
+        if(todo.classList.contains("expanded")) {
+        todo.classList.remove("expanded");
+        button.innerHTML = menuIcon;
+    } else {
+        todo.classList.add("expanded");
+        button.innerHTML = closeSvg;
+    }  
 }

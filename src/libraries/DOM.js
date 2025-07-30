@@ -13,7 +13,8 @@ export function appendTo(father, ...children) {
 
 export const creator = {
     labeledInput(props) {
-        const container = createElement("div", `flex-column-group`);
+        if(!props.class) props.class = "";
+        const container = createElement("div", `flex-column-group ${props.class}`);
         const label = document.createElement("label");
         label.setAttribute("for", props.id)
         label.innerText = props.labelText;
@@ -29,6 +30,7 @@ export const creator = {
     },
 
     labeledSelect({name, id, labelText, options = 3, priorities}) {
+        if(!name) name = "";
         const container = createElement("div", `flex-column-group ${name}`);
         const label = document.createElement("label");
         label.setAttribute("for", id)
@@ -47,3 +49,67 @@ export const creator = {
         return container;
     }
 } 
+
+export function create( container = {} ) {
+    const parentElement = createElement(container.tagName, container.className);
+
+    const childrenElements = [];
+
+    const { children } = container;
+
+    if(children.label) {
+        const label = createLabel(children.label);
+        childrenElements.push(label);
+    }
+    if(children.textarea) {
+        const textarea = createTextarea(children.textarea);
+        childrenElements.push(textarea);
+    }
+    if(children.input) {
+        const input = createInput(children.input);
+        childrenElements.push(input);
+    }
+    if(children.select) {
+        const select = createSelect(children.select);
+        childrenElements.push(select);
+    }
+    
+    childrenElements.forEach(child => appendTo(parentElement, child));
+
+    return parentElement;
+}
+
+function createInput({ required, id, type }) {
+    const input = document.createElement("input");
+    input.setAttribute("placeholder", "Todo Title");
+    input.setAttribute("required", required);
+    input.setAttribute("id", id);
+    input.setAttribute("type", type);
+    return input;
+}
+
+function createSelect({ id, options, values }) {
+    const select = document.createElement("select");
+    select.setAttribute("id", id);
+    for(let i = 0; i < options; i++) {
+        const option = document.createElement("option");
+        option.innerText = values[i];
+        option.setAttribute("value", values[i]);
+    }
+    return select;
+}
+
+function createLabel({ id, labelText }) {
+    const label = document.createElement("label");
+    label.setAttribute("for", id)
+    label.innerText = labelText;
+    return label;
+}
+
+function createTextarea({ id, cols, rows }) {
+    const textarea = document.createElement("textarea");
+    textarea.setAttribute("id", id);
+    textarea.setAttribute("cols", cols);
+    textarea.setAttribute("rows", rows);
+    return textarea;
+}

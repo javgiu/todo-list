@@ -102,13 +102,24 @@ addGlobalEvent(
         const name = formElement.querySelector("#name");
         const date = formElement.querySelector("#due-date");
         const priority = formElement.querySelector("#priority");
+        const description = formElement.querySelector("#description");
 
         pubsub.emmit("createNewTodoRequested", {
             title: name.value,
             dueDate: date.value,
-            priority: priority.value
+            priority: priority.value,
+            description: description.value 
         });
 
         console.log(name.value)
     }
 )
+
+addGlobalEvent(
+    "click",
+    "[expand-todo-button]",
+    (e, button) => {
+        const todoElement = button.parentElement.parentElement;
+        pubsub.emmit("expandTodo", { button, todoElement });
+    }
+);

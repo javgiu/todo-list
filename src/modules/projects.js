@@ -66,9 +66,9 @@ function deleteProject(index) {
 
 // Create new Todo
 
-function createNewTodo({title, dueDate, priority}) {
+function createNewTodo({ title, dueDate, priority, description }) {
     const project = projects[expandedProjectIndex];
-    const todo = new Todo(title, priority, dueDate);
+    const todo = new Todo(title, priority, dueDate, description);
     project.todos.push(todo);
     sortTodosByPriority(project);
     pubsub.emmit("projectsUpdated", projects);
@@ -120,7 +120,6 @@ function fillProjects(...projectsArray) {
     // if exists projects in storage get projects from storage
     if(getFromStorage("projects")) {
         projects.push(...getFromStorage("projects")); // if not use ... pass an array with the object in array[0]
-        console.log(projects, "Getting projects from storage");
         return;
     }
     // else push default project
