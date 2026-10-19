@@ -1,3 +1,5 @@
-# restaurant-page
+# Do it
 
-A beta website of a restaurant
+A basic Todo App 
+
+[View Live Demo](https://javgiu.github.io/todo-list/)
